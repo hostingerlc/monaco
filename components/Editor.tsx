@@ -330,6 +330,21 @@ const Editor = () => {
                 scrollBeyondLastLine: false
             });
             
+            // Register custom command for toggling word wrap
+            editorRef.current.addAction({
+                id: 'toggle-word-wrap',
+                label: 'Toggle Word Wrap',
+                keybindings: [
+                    window.monaco.KeyMod.Alt | window.monaco.KeyCode.KeyZ
+                ],
+                contextMenuGroupId: 'navigation',
+                run: (editor: any) => {
+                    const currentWordWrap = editor.getOption(window.monaco.editor.EditorOption.wordWrap);
+                    const newWordWrap = currentWordWrap === 'off' ? 'on' : 'off';
+                    setWordWrap(newWordWrap);
+                }
+            });
+            
             // Apply the current language after editor is fully initialized
             setTimeout(() => {
                 if (editorRef.current && lang !== 'text/plain') {
@@ -415,7 +430,7 @@ const Editor = () => {
                 <div ref={containerRef} id="monaco-container" style={{borderRadius: 'var(--borderRadius)', overflow: 'hidden'}} />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem', gap: '0.5rem', alignItems: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
                 <div className='FileEditContainer___StyledDiv5-sc-48rzpu-9 arKOj'>
                     <Select value={lang} onChange={(e) => setLang(e.currentTarget.value)}>
                         {modes.map((mode) => (
@@ -425,13 +440,6 @@ const Editor = () => {
                         ))}
                     </Select>
                 </div>
-                
-                <Button 
-                    onClick={() => setWordWrap(wordWrap === 'off' ? 'on' : 'off')}
-                    style={{ whiteSpace: 'nowrap' }}
-                >
-                    {wordWrap === 'off' ? 'Enable' : 'Disable'} Word Wrap
-                </Button>
                 
                 {action === 'edit' ? (
                     <Can action={'file.update'}>
