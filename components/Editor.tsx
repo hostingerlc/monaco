@@ -14,6 +14,7 @@ import Can from '@/components/elements/Can';
 import Select from '@/components/elements/Select';
 import Button from '@/components/elements/Button';
 import modes from '@/modes';
+
 declare global {
     interface Window {
         monaco: any;
@@ -53,6 +54,7 @@ const Editor = () => {
     const [loading, setLoading] = useState(action === 'edit');
     const [monacoLoaded, setMonacoLoaded] = useState(false);
     const [lang, setLang] = useState('text/plain');
+    const [wordWrap, setWordWrap] = useState<'off' | 'on'>('off');
     
     // Refs
     const containerRef = useRef<HTMLDivElement>(null);
@@ -234,6 +236,7 @@ const Editor = () => {
             })
             .then(() => setLoading(false));
     };
+    
     // Load file contents for existing files
     useEffect(() => {
         if (action === 'new') return;
@@ -250,6 +253,7 @@ const Editor = () => {
             })
             .then(() => setLoading(false));
     }, [action, uuid, hash]);
+    
     // Load Monaco Editor from CDN
     useEffect(() => {
         const loadMonaco = () => {
@@ -290,6 +294,7 @@ const Editor = () => {
             }
         };
     }, []);
+    
     // Initialize editor when both Monaco is loaded and we have content (or for new files)
     useEffect(() => {
         if (!monacoLoaded || !containerRef.current) {
@@ -321,7 +326,7 @@ const Editor = () => {
                     enabled: true
                 },
                 fontSize: 14,
-                wordWrap: 'off',
+                wordWrap: wordWrap,
                 scrollBeyondLastLine: false
             });
             
@@ -336,7 +341,15 @@ const Editor = () => {
                 }
             }, 100);
         }
-    }, [monacoLoaded, content, loading, action, lang]);
+    }, [monacoLoaded, content, loading, action, lang, wordWrap]);
+    
+    // Update editor word wrap when wordWrap state changes
+    useEffect(() => {
+        if (editorRef.current) {
+            editorRef.current.updateOptions({ wordWrap: wordWrap });
+        }
+    }, [wordWrap]);
+    
     // Update editor language when lang changes
     useEffect(() => {
         if (editorRef.current && window.monaco) {
@@ -382,7 +395,6 @@ const Editor = () => {
             editorRef.current.setValue(content);
         }
     }, [content]);
-    
 
     return (
         <>
@@ -403,7 +415,7 @@ const Editor = () => {
                 <div ref={containerRef} id="monaco-container" style={{borderRadius: 'var(--borderRadius)', overflow: 'hidden'}} />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem', gap: '0.5rem', alignItems: 'center' }}>
                 <div className='FileEditContainer___StyledDiv5-sc-48rzpu-9 arKOj'>
                     <Select value={lang} onChange={(e) => setLang(e.currentTarget.value)}>
                         {modes.map((mode) => (
@@ -413,6 +425,13 @@ const Editor = () => {
                         ))}
                     </Select>
                 </div>
+                
+                <Button 
+                    onClick={() => setWordWrap(wordWrap === 'off' ? 'on' : 'off')}
+                    style={{ whiteSpace: 'nowrap' }}
+                >
+                    {wordWrap === 'off' ? 'Enable' : 'Disable'} Word Wrap
+                </Button>
                 
                 {action === 'edit' ? (
                     <Can action={'file.update'}>
@@ -431,4 +450,5 @@ const Editor = () => {
         </>
     );
 };
+
 export default Editor;
