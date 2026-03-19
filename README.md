@@ -6,4 +6,7 @@
 >
 <br>
 
+> [!WARNING]
+> Our fork of Monaco has been **discontinued**, we are no longer in need of this.
+
 PteroMonaco - Edited for [.host](https://dothost.xyz) use.
